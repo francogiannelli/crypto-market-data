@@ -75,13 +75,15 @@
               {
                     if (!data_futures[i].symbol.includes("PERP")) 
                     {
+                              let symbol_date = data_futures[i].symbol.substring(data_futures[i].symbol.length - 6)
+
                               let future_prices = data_futures[i].markPrice
                               let spot_prices = data_futures[i].indexPrice
-                                let start_date = new Date(Date.now())
-                                let year_end_date = "20" + data_futures[i].symbol.substring(7, 9)
-                                let month_end_date = data_futures[i].symbol.substring(9, 11)-1
-                                let day_end_date = data_futures[i].symbol.substring(11, 13)
-                                let end_date = new Date(year_end_date, month_end_date, day_end_date)
+                              let start_date = new Date(Date.now())
+                              let year_end_date = "20" + symbol_date.substring(0, 2)
+                              let month_end_date = symbol_date.substring(2, 4) - 1
+                              let day_end_date = symbol_date.substring(4, 6)
+                              let end_date = new Date(year_end_date, month_end_date, day_end_date)
                               let days_to_set = (end_date - start_date)/86400000
                               let direct_rate = (future_prices/spot_prices-1)*100
                               let annual_rate = direct_rate/days_to_set*365
