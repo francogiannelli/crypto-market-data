@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Futures Index Prices</title>
+
+    <style>
+      body 
+      {
+        background-color: #252526; /*Color de fondo del body*/
+        font-family: sans-serif; /*Fuente para textos del body*/
+        font-size: 12px; /*Tamaño de la fuente para textos del body*/
+        color: #d4d4d4; /*Color de la fuente para textos del body*/
+      }
+      nav
+      {
+        text-align: center;
+        padding: 10px;
+      }
+      .button
+      {
+        background-color: #264F78;
+        border: none;
+        color: white;
+        padding: 10px 10px; /*Padding dentro del boton, del texto al borde*/
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 12px;
+      }
+      table 
+      {
+        border-spacing: 0px; /*Elimino el espacio entre filas y columnas no deseados*/
+        margin-right: auto; margin-left: auto; /*Centro la tabla en el body de la página*/
+      } 
+      tr:nth-child(even) {background-color: #1e1e1e;} /*Pinta fila de pormedio*/
+      tr:hover{background-color: #264F78;} /*Pinto filas al pasar el mouse por encima*/
+      td{padding:7px 10px;} /*Espacio dentro de cada celda, del contenido al borde*/
+      #mark_price, #spot_price, #days_to_set, #direct_rate, #annual_rate{text-align: right;} /*Alineo la columna de precios a la derecha*/
+      footer, #binance_api_update
+      {
+        text-align: center;
+        padding: 5px;
+      }
+    </style>
+
+  </head>
+
+  <body>
+    
+    <nav>
+      <a href="Futures Index Binance.HTML" class="button">Binance</a>
+    </nav>
+    <div id="binance_api">
+      <table id="binance_api_table"></table>
+      <div id="binance_api_update"></div>
+    </div>
+    <footer>
+      Made by <a href="https://www.linkedin.com/in/francogiannelli/" target="_blank">Franco Giannelli</a>. Data from <a href="https://binance-docs.github.io/apidocs/" target="_blank">Binance API</a>.
+    </footer>
+    
+
+    <script>
+      fetch("https://dapi.binance.com/dapi/v1/premiumIndex") //Mando la request GET al servidor de Binance para obtener información de los futuros
+        .then((response) => response.json())
+        .then((data_futures) => 
+        {
+
+              let binance_api_table = '<th>Symbol</th><th>Mark Price</th><th>Spot Price</th><th>Days</th><th>Direct Rate (%)</th><th>Annual Rate (%)</th>'; //Defino la variable prices como un string, y le asigno originalmente los headers (luego con el loop le agrego las filas)
+              
+              for (let i = 0; i < data_futures.length; i++) 
+              {
+                    if (!data_futures[i].symbol.includes("PERP")) 
+                    {
+                              let future_prices = data_futures[i].markPrice
+                              let spot_prices = data_futures[i].indexPrice
+                                let start_date = new Date(Date.now())
+                                let year_end_date = "20" + data_futures[i].symbol.substring(7, 9)
+                                let month_end_date = data_futures[i].symbol.substring(9, 11)-1
+                                let day_end_date = data_futures[i].symbol.substring(11, 13)
+                                let end_date = new Date(year_end_date, month_end_date, day_end_date)
+                              let days_to_set = (end_date - start_date)/86400000
+                              let direct_rate = (future_prices/spot_prices-1)*100
+                              let annual_rate = direct_rate/days_to_set*365
+
+                              binance_api_table += 
+                                `<tr>
+                                  <td id="symbol">${data_futures[i].symbol}</td>
+                                  <td id="mark_price">${parseFloat(future_prices).toFixed(2)}</td>
+                                  <td id="spot_price">${parseFloat(spot_prices).toFixed(2)}</td>
+                                  <td id="days_to_set">${Math.round(days_to_set)}</td>
+                                  <td id="direct_rate">${parseFloat(direct_rate).toFixed(2)}</td>
+                                  <td id="annual_rate">${parseFloat(annual_rate).toFixed(2)}</td>
+                                </tr>`
+
+                          
+                      
+                    }
+              }
+
+              document.getElementById("binance_api_table").innerHTML = binance_api_table; //Modifico el DOM
+            });
+
+        fetch("https://dapi.binance.com/dapi/v1/time") //Mando la request GET al servidor de Binance para obtener información de los futuros
+        .then((response) => response.json())
+        .then((data_futures) => 
+        {
+          document.getElementById("binance_api_update").innerHTML = 'Last update: '+new Date(data_futures.serverTime);
+        });
+
+    </script>
+  </body>
+</html>
